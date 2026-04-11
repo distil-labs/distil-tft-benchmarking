@@ -1,0 +1,30 @@
+base:
+  student_model_name: Qwen3-1.7B
+  task: multi-turn-tool-calling-closed-book
+  teacher_model_name: zai.glm-5
+evaluation:
+  llm_as_a_judge_model_name: openai.gpt-oss-120b
+synthgen:
+  generation_in_single_call: 1
+  generation_target: 2000
+  mutation_topics:
+  - 'short conversation: aim for 9-13 turns total, FindRestaurants called early within
+    1-3 turns'
+  - 'short-medium conversation: aim for 13-17 turns total, FindRestaurants within
+    first 5 turns'
+  - 'medium conversation: aim for 15-19 turns total, includes FindRestaurants and
+    ReserveRestaurant'
+  - 'long conversation: aim for 21-29 turns total, full search + discussion + reservation
+    flow'
+  parallel_llm_calls: true
+  validation_max_total_length: 20000
+trace_processing:
+  convert_to_single_turn: false
+  min_generated_examples: 0
+  num_traces_as_testing_base: 0
+  num_traces_as_training_base: 90
+  observation_format: unstructured_with_openai_messages
+  relabelling_committee_models:
+  - openai.gpt-oss-120b
+  - zai.glm-5
+  teacher_model_name: zai.glm-5

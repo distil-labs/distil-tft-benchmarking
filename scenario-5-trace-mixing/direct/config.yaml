@@ -1,0 +1,8 @@
+base:
+  student_model_name: Qwen3-1.7B
+  task: multi-turn-tool-calling-closed-book
+  teacher_model_name: openai.gpt-oss-120b
+evaluation:
+  llm_as_a_judge_model_name: openai.gpt-oss-120b
+synthgen:
+  parallel_llm_calls: true
