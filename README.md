@@ -1,9 +1,15 @@
 # TFT (Training from Traces) Benchmark
 
-Benchmark comparing two approaches to training Small Language Models (SLMs) from production traces:
+**Blog post**: [Why Training on Production Traces Fails (and What to Do Instead)](https://www.distillabs.ai/blog/traces-vs-synthetic-benchmark/)
+
+Teams deploying LLM agents often attempt to reduce costs and latency by fine-tuning smaller models on production conversation logs. However, production traces contain inherent noise — incorrect tool calls, inconsistent schemas, irrelevant data — that gets embedded as training signal. This benchmark quantifies the problem and demonstrates a solution.
+
+We compare two approaches to training Small Language Models (SLMs) from production traces:
 
 - **TFT Pipeline**: trace filtering + committee relabeling + synthetic data generation + finetuning
 - **Direct Training**: train directly on raw/corrupted traces (no filtering, no relabeling, no synth gen)
+
+Rather than treating traces as labeled examples, TFT uses them as *context*. A teacher LLM reads traces alongside the task description and tool schema, then generates clean synthetic conversations. A validation layer filters the output before student model training.
 
 Both pipelines are evaluated on the same held-out test set across 5 scenarios, each testing a specific real-world failure mode.
 
@@ -92,6 +98,18 @@ For reference, teacher models evaluated on the same test set (5 seeds each):
 | Qwen3-235B | 0.768 | 0.018 |
 | MiniMax-M2 | 0.762 | 0.010 |
 | DeepSeek-3.2 | 0.744 | 0.014 |
+
+## Trained Models
+
+All trained models are published on HuggingFace. Each is a Qwen3-1.7B model fine-tuned with LoRA (merged weights).
+
+| Scenario | TFT Model | Direct Model |
+|----------|-----------|--------------|
+| S1 Baseline | [distillabs/tft-benchmark-s1-tft-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s1-tft-Qwen3-1.7B) | [distillabs/tft-benchmark-s1-direct-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s1-direct-Qwen3-1.7B) |
+| S2 Noisy Labels | [distillabs/tft-benchmark-s2-tft-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s2-tft-Qwen3-1.7B) | [distillabs/tft-benchmark-s2-direct-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s2-direct-Qwen3-1.7B) |
+| S3 Schema Drift | [distillabs/tft-benchmark-s3-tft-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s3-tft-Qwen3-1.7B) | [distillabs/tft-benchmark-s3-direct-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s3-direct-Qwen3-1.7B) |
+| S4 Low Data | [distillabs/tft-benchmark-s4-tft-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s4-tft-Qwen3-1.7B) | [distillabs/tft-benchmark-s4-direct-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s4-direct-Qwen3-1.7B) |
+| S5 Trace Mixing | [distillabs/tft-benchmark-s5-tft-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s5-tft-Qwen3-1.7B) | [distillabs/tft-benchmark-s5-direct-Qwen3-1.7B](https://huggingface.co/distillabs/tft-benchmark-s5-direct-Qwen3-1.7B) |
 
 ## Configuration
 
