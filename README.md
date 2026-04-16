@@ -159,27 +159,3 @@ distil-tft-benchmarking/
     └── direct/
 ```
 
-### Running the benchmark
-
-**TFT pipeline** (trace processing + synthetic data generation + finetuning + evaluation):
-
-The `tft/` directories contain the raw trace-processing inputs. The TFT pipeline handles
-filtering, committee relabeling, seed/unstructured splitting, synthetic data generation,
-and finetuning end-to-end.
-
-```bash
-run-e2e-distillation --input_dir scenario-N/tft/ --output_dir <output>
-```
-
-**Direct Training** (finetuning + evaluation only):
-
-The `direct/` directories contain pre-expanded training conversations from the traces.
-The `run-finetune` entrypoint expects training data in a `final-synthetic-dataset/`
-subdirectory. To run from this benchmark data:
-
-```bash
-cd scenario-N/direct/
-mkdir -p final-synthetic-dataset
-cp train.jsonl test.jsonl final-synthetic-dataset/
-run-finetune --input_dir . --output_dir <output>
-```
