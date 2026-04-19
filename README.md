@@ -140,6 +140,9 @@ distil-tft-benchmarking/
 │   │   ├── job_description.json
 │   │   ├── traces.jsonl        # Production traces (scenario-specific, possibly corrupted)
 │   │   └── test.jsonl          # Shared test set (34 multi-turn conversations)
+│   ├── tft-raw-data/           # Traces + task spec for training new models
+│   │   ├── traces.jsonl        # Same traces as tft/
+│   │   └── task.txt            # Task description, judge instructions, mutation topics
 │   └── direct/                 # Direct training input (for run-finetune)
 │       ├── config.yaml
 │       ├── job_description.json
@@ -147,15 +150,19 @@ distil-tft-benchmarking/
 │       └── test.jsonl          # Shared test set
 ├── scenario-2-noisy-labels/
 │   ├── tft/
+│   ├── tft-raw-data/
 │   └── direct/
 ├── scenario-3-schema-drift/
 │   ├── tft/
+│   ├── tft-raw-data/
 │   └── direct/
 ├── scenario-4-low-data/
 │   ├── tft/
+│   ├── tft-raw-data/
 │   └── direct/
 └── scenario-5-trace-mixing/
     ├── tft/
+    ├── tft-raw-data/
     └── direct/
 ```
 

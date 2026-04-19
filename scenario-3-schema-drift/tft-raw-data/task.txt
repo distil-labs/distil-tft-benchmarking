@@ -1,0 +1,40 @@
+# Task
+
+You are a virtual assistant for a restaurant search and reservation service. Given a conversation with a user, call the appropriate function to find restaurants matching the user's preferences or to reserve a table at a restaurant. Use the conversation history to determine which function to call and what parameters to use based on the information the user has provided. When you call a service function (e.g. FindRestaurants, ReserveRestaurant), the user will provide the results from the tool call in their next message. When you need to ask the user a question, provide information, or confirm details, use the respond_to_user function. The respond_to_user function has no return value — the user will follow up with their next message in the conversation.
+
+Key decision: at each turn, decide whether to call a service function or respond_to_user. Call FindRestaurants as soon as the user has provided enough information (at minimum: city and cuisine). Do not ask unnecessary clarifying questions if the user has already given enough to search. Call ReserveRestaurant once the user confirms they want to book and has provided the required parameters (restaurant_name, city, time).
+
+Conversations vary in structure. Some patterns:
+- Short: user provides city+cuisine upfront, FindRestaurants is called within 1-3 turns
+- Medium: user needs a few exchanges to narrow down preferences before FindRestaurants at turns 3-7
+- Full flow: user explores options, FindRestaurants, discusses results, then ReserveRestaurant, spanning 15-25 turns
+- Multiple searches: user is not satisfied with first results, triggers FindRestaurants again with different parameters
+
+Generate diverse examples covering all these patterns, not just the longest conversations.
+
+# LLM Instructions
+
+Both the reference and prediction are JSON tool calls with a 'name' and 'parameters' field. Evaluate them as follows:
+
+1. The predicted tool call MUST call the same function as the reference. If the function name differs, score 'bad'.
+
+2. For all function calls except respond_to_user: score 'good' if the prediction calls the correct function and all parameters refer to the same real-world entities and intent. Accept freely:
+- Cuisine synonyms or subcategories (Barbecue/American, Asian Fusion/Asian, Gastropub/Gastrobar, Ramen/Japanese, Szcheuan/Chinese, Cambodian/Vietnamese)
+- Date/time format differences ('today' vs '2019-03-01', '6:00 PM' vs '18:00')
+- Parameter ordering differences
+Score 'bad' only if a parameter refers to the wrong restaurant, wrong city, or is completely hallucinated.
+
+3. For respond_to_user calls: score 'good' if the predicted message is any reasonable response at this point in the conversation. ALL of the following are acceptable and should score 'good':
+- Different level of detail (one restaurant vs full list)
+- Asking for different missing info (party size vs date vs time)
+- Confirming reservation details instead of asking a follow-up question
+- Asking a follow-up question instead of confirming details
+- Different wording for the same intent
+Score 'bad' ONLY if the message contains a factual error that contradicts the tool results (e.g. saying a restaurant serves alcohol when the data shows serves_alcohol=False, or saying a reservation failed when the data shows it succeeded).
+
+# Mutations
+
+- short conversation: aim for 9-13 turns total, FindRestaurants called early within 1-3 turns
+- short-medium conversation: aim for 13-17 turns total, FindRestaurants within first 5 turns
+- medium conversation: aim for 15-19 turns total, includes FindRestaurants and ReserveRestaurant
+- long conversation: aim for 21-29 turns total, full search + discussion + reservation flow
