@@ -1,0 +1,81 @@
+{
+  "task_description": "You are a virtual assistant for a restaurant search and reservation service. Given a conversation with a user, call the appropriate function to find restaurants matching the user's preferences or to reserve a table at a restaurant. Use the conversation history to determine which function to call and what parameters to use based on the information the user has provided.\n\nWhen you call a service function (FindRestaurants or ReserveRestaurant), the user's next message will contain the JSON results from the tool call. When you need to ask the user a question, provide information, or confirm details, call the respond_to_user function. The respond_to_user function has no return value — the user will follow up with their next message in the conversation.\n\nKey decision at each turn: call a service function or respond_to_user. Call FindRestaurants as soon as the user has provided enough information (at minimum: city and cuisine). Do not ask unnecessary clarifying questions if the user has already given enough information to search. Call ReserveRestaurant once the user has confirmed they want to book and has provided the required parameters (restaurant_name, city, time; date and party_size default to today / 2 if unspecified).\n\nOutput format: exactly one tool call per assistant turn, as JSON of the form {\"name\": \"<tool_name>\", \"parameters\": {...}}. Multiple tool calls per turn are not supported.\n\nConversation length varies: some users provide city+cuisine upfront (FindRestaurants within 1–3 turns); others need several exchanges to narrow down preferences before searching (FindRestaurants at turns 3–7); full flows include search, discussion, and reservation (15–25 turns); some users run multiple searches if the first results do not satisfy them.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "FindRestaurants",
+        "description": "Search for restaurants matching the user's city and cuisine preferences. Returns a JSON array of restaurants (the results are delivered to the assistant via the next user message).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string",
+              "description": "The city to search in, e.g. 'San Francisco', 'Berkeley', 'Campbell'."
+            },
+            "cuisine": {
+              "type": "string",
+              "description": "The cuisine type, e.g. 'Italian', 'Thai', 'American', 'Breakfast'."
+            },
+            "price_range": {
+              "type": "string",
+              "description": "Optional price range filter, typically 'cheap', 'moderate', 'pricey', or 'ultra high-end'."
+            }
+          },
+          "required": ["city", "cuisine"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "ReserveRestaurant",
+        "description": "Reserve a table at a specific restaurant. Returns reservation confirmation details (delivered via the next user message).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "restaurant_name": {
+              "type": "string",
+              "description": "The exact name of the restaurant to reserve."
+            },
+            "city": {
+              "type": "string",
+              "description": "The city the restaurant is in."
+            },
+            "date": {
+              "type": "string",
+              "description": "The reservation date in YYYY-MM-DD format."
+            },
+            "time": {
+              "type": "string",
+              "description": "The reservation time in 24-hour HH:MM format."
+            },
+            "party_size": {
+              "type": "string",
+              "description": "The number of people in the party, as a string, e.g. '2'."
+            }
+          },
+          "required": ["restaurant_name", "city", "date", "time", "party_size"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "respond_to_user",
+        "description": "Send a natural-language message to the user. Use this to ask clarifying questions, confirm details before booking, present search results, answer factual questions about a restaurant, or close out the conversation. This function has no return value; the user's next message will be their reply.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "The message to send to the user."
+            }
+          },
+          "required": ["message"]
+        }
+      }
+    }
+  ],
+  "llm_as_a_judge_instructions": "Both the reference and prediction are JSON tool calls with a 'name' and 'parameters' field. Evaluate them as follows:\n\n1. The predicted tool call MUST call the same function as the reference. If the function name differs, score 'bad'.\n\n2. For service function calls (FindRestaurants, ReserveRestaurant): score 'good' if the prediction calls the correct function and all parameters refer to the same real-world entities and intent. Accept freely:\n   - Cuisine synonyms or subcategories (Barbecue/American, Asian Fusion/Asian, Gastropub/Gastrobar, Ramen/Japanese, Szechuan/Chinese, Cambodian/Vietnamese, etc.)\n   - Date/time format differences ('today' vs '2019-03-01', '6:00 PM' vs '18:00')\n   - Parameter ordering differences\n   Score 'bad' only if a parameter refers to the wrong restaurant, wrong city, or is completely hallucinated.\n\n3. For respond_to_user calls: score 'good' if the predicted message is any reasonable response at this point in the conversation. ALL of the following are acceptable and should score 'good':\n   - Different level of detail (one restaurant vs full list)\n   - Asking for different missing info (party size vs date vs time)\n   - Confirming reservation details instead of asking a follow-up question\n   - Asking a follow-up question instead of confirming details\n   - Different wording for the same intent\n   Score 'bad' ONLY if the message contains a factual error that contradicts the tool results (e.g. saying a restaurant serves alcohol when the data shows serves_alcohol=False, or saying a reservation failed when the data shows it succeeded)."
+}

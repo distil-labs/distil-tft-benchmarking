@@ -12,7 +12,7 @@ Conversations vary in structure. Some patterns:
 
 Generate diverse examples covering all these patterns, not just the longest conversations.
 
-# LLM Instructions
+# LLM as a judge Instructions
 
 Both the reference and prediction are JSON tool calls with a 'name' and 'parameters' field. Evaluate them as follows:
 
